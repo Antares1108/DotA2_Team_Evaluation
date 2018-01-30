@@ -1,0 +1,62 @@
+[
+    {
+    	"key": "Anti-Mage",
+ "img": "https://s3.amazonaws.com/cse6242project/Anti-Mage.png",
+ "orbital_period": "2",
+ "radius": "2000"
+    	},
+    {
+    	"key": "Bane",
+    	"orbital_period": "2",
+        "img": "https://s3.amazonaws.com/cse6242project/Abaddon.png",
+    	"radius": 6052.59
+    	},
+    {
+        "key": "Bristleback",
+    	"orbital_period": "2",
+        "img": "https://s3.amazonaws.com/cse6242project/Abaddon.png",
+    	"radius": 6378.2
+    },
+    {
+    	"key": "Crystal Maiden",
+    	"orbital_period": "2",
+        "img":"https://s3.amazonaws.com/cse6242project/Abaddon.png",
+    	"radius": 3397.00
+    	},
+    {
+        "key": "CLinkz",
+    	"orbital_period": "2",
+        "img": "https://s3.amazonaws.com/cse6242project/Abaddon.png",
+    	"radius": 72492.68,
+        "values": [
+            
+        ]
+    },
+    {
+        "key": "Io",
+    	"orbital_period": "2",
+        "img":"https://s3.amazonaws.com/cse6242project/Abaddon.png",
+    	"radius": 60267.24,       
+        "values": [
+            
+        ]
+    },
+    {
+        "key": "Kunkka",
+    	"orbital_period": "2",
+        "img":"https://s3.amazonaws.com/cse6242project/Abaddon.png",
+    	"radius": 25557.25,
+        "values": [
+            
+        ]
+    },
+    {
+        "key": "Lion",
+    	"orbital_period": "2",
+        "img":"https://s3.amazonaws.com/cse6242project/Abaddon.png",
+    	"radius": 24766.36,
+        "values": [
+            
+        ]
+    }
+]

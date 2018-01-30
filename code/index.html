@@ -1,0 +1,1308 @@
+<html>
+<head>
+  <title>DoTA2 Heroes</title>
+  <meta charset="utf-8" />
+</head>
+<style>
+
+  #viz, svg {
+    width: 1500px;
+    height: 1000px;
+  }
+
+  text {
+    pointer-events: none;
+    font-family: Times;
+  }
+
+  #buttons {
+    position: absolute;
+    top:422;
+    left:760;
+  }
+
+  circle.ring {
+    fill: none;
+    stroke: black;
+    stroke-width: 70px;
+    stroke-opacity: .20;
+
+  }
+  
+  .tip{
+    color: white;
+    background: black;
+    padding: 0px;
+    font-size: 20px;
+  }  
+</style>
+<script>
+
+function makeViz() {
+  var url = "hero_final.json";
+  d3.json(url, function(data) {drawOrbit(data)});
+
+}
+
+function drawOrbit(_data) {
+  d3.csv("best4choices.csv",function(error, dwinrate1){
+    if(error) throw error;
+    // dwinrate1.forEach(function(d){
+    //   d.hero_id = +d.hero_id;
+    //   d.win_rate = +d.win_rate;
+    // })
+    // dwinrate1.sort(function(a,b) {return b.win_rate - a.win_rate;});
+
+  var suggest = [];
+  var i = 0;
+  var j = 0;
+  var analyse_flag = 0;
+  var cnt;
+  var x1=x2=x3=x4=x5=0.0;
+  var totalScore=0;
+  // for(i=0;i<5;i++){
+  //   suggest.push(dwinrate1[i].hero_id);
+  // }
+       console.log(suggest);
+  //orbitScale = d3.scale.linear().domain([1, 3]).range([3.8, 1.5]).clamp(true);
+  //radiusScale = d3.scale.linear().domain([210.64,2500,10000,71492.68]).range([2,4,8,16]);
+
+  //planetColors = {Mercury: "gray", Venus: "#d6bb87", Earth: "#677188", Mars: "#7c5541", Jupiter: "#a36a3e", Saturn: "#e9ba85", Uranus: "#73cbf0", Neptune: "#6383d1"}
+  chosen = [{hero_id:null, order:0},{hero_id:null, order:1},{hero_id:null, order:2},
+  {hero_id:null, order:3},{hero_id:null, order:4}];
+  
+    //create tolltip
+    var tip = d3.tip()
+        .attr("class","tip")
+        .html(function(d){
+          if(!d.fixed){
+                      return d.key;}
+        });
+    d3.select("svg").call(tip);
+
+
+  orbit = d3.layout.orbit().size([900,900])
+  // .attr("transform","translate(250,0)")
+  .children(function(d) {return d.values})
+  .revolution(function(d) {return 1 / d.orbital_period})
+  //.orbitSize(function(d) {return orbitScale(d.depth)})
+  .speed(1)
+  .mode("atomic")
+  .nodes(_data);
+
+  // d3.selectAll("g.viz")
+
+  d3.select("svg")
+  .append("g")
+  .attr("class", "viz").attr("transform","translate(250,0)")
+  //.attr("transform", "translate(50,50)")
+  .selectAll("g.node").data(orbit.nodes())
+  .enter()
+  .append("g")
+  .attr("id",function(d){return "n" + d.hero_id;})
+  .attr("class", "node")
+  .attr("transform", function(d) {return "translate(" +d.x +"," + d.y+")"})
+  .on("mouseover", nodeOver)
+  .on("mouseout", nodeOut)
+  .on("click",function(d){
+                
+    if(!analyse_flag){
+      d3.selectAll("g.node")
+            .style("opacity",1);
+            d3.selectAll("g.node").selectAll("circle")
+            .style("stroke", "none").style("stroke-width", 0);
+        // if (i < 5) {
+          if (!d.fixed) {
+            // d3.selectAll("g.node")
+            // .style("opacity",1);
+            // d3.selectAll("g.node").selectAll("circle")
+            // .style("stroke", "none").style("stroke-width", 0);
+            for(i=0;i<5;i++){
+              if(!chosen[i].hero_id){
+                chosen[i].hero_id = d.hero_id;
+                        x1 +=d.attr1;console.log(x1);
+        x2 +=d.attr2;
+        x3 +=d.attr3;
+        x4 +=d.attr4;
+        x5 +=d.attr5;
+                console.log(d);
+                // cnt = 0;
+                // for(j=0;j<5;j++){
+                //   if(chosen[j].name != null)cnt++;
+                // }
+                // if(cnt == 1){
+                //}
+              d3.select(this).select("image")
+              .attr("x",function(d){return d.x-30;})
+            .attr("y",function(d){return d.y-26;});
+             d3.select(this).select("circle")
+             .attr("cx",function(d){return d.x;})
+            .attr("cy",function(d){return d.y;});
+
+            d3.select(this).select("image")
+            .transition().duration(500)
+            .attr("height", 80)
+            .attr("width", 80)
+            //.attr("transform","(415,"+(i)*70+")")
+            .attr("x",415)
+            .attr("y",280 + (chosen[i].order)*70);
+            d3.select(this).append("text").transition().duration(500)
+            .text(d.key).attr("x",415).attr("y",280 + 35 + (chosen[i].order)*70)
+            .style("fill","white").style("text-anchor", "end");
+            d3.select(this).select("circle").transition().duration(500)
+            .attr("r",34)
+            .attr("cx",454.5)
+            .attr("cy",280 + 70 - 35.5 + (chosen[i].order)*70);
+             d3.select(this)
+       .attr("transform", function(d) {return "translate(" +0 +"," + 0+")"});
+            d3.select(this).classed("fixed", d.fixed = true);
+            suggestion(d);
+            //var tempname = d.key;
+            //var temphero = {name: tempname};
+            //chosen.push(temphero);
+            
+            console.log(chosen);console.log(!chosen[i].hero_id);break;
+          // d3.select("g")
+          //     .append("image")
+          //     .attr("class",d.key)
+          //     .attr("xlink:href",  d.img)
+          //     .attr("x",400)
+          //     .attr("y",340 + i*50)
+          //     .attr("height", 60)
+          //     .attr("width", 60);
+          //   d3.select("g")
+          //     .append("text")
+          //     .attr("class",d.key)
+          //     .text(tempname)
+          //     .attr("x",470)
+          //     .attr("y",320 + (++i)*50)
+          //     .style("fill", "white");
+          //     console.log(chosen);console.log(tempname);
+            //choose();
+            }}} else {
+            //   d3.select(this).select("image")
+            //   .attr("x",function(d){return 0;})
+            // .attr("y",function(d){return 0;});
+            //  d3.select(this).select("circle")
+            //  .attr("cx",function(d){return 0;})
+            // .attr("cy",function(d){return 0;});
+            // d3.select(this).select("image").transition().duration(1000)
+            // .style("opacity",0);
+            for(i=0;i<5;i++){
+              if(d.hero_id == chosen[i].hero_id){
+                chosen[i].hero_id = null;
+                x1 -=d.attr1;console.log(x1);
+        x2 -=d.attr2;
+        x3 -=d.attr3;
+        x4 -=d.attr4;
+        x5 -=d.attr5;
+              d3.select(this).select("image").transition().duration(500)
+              .attr("x", -30+0.5)
+              .attr("y", -26+0.5)
+              .attr("height", 60)
+              .attr("width", 60);
+              d3.select(this).select("circle").transition().duration(500).attr("r",25)
+              .attr("cx",0).attr("cy",0);
+              d3.select(this).select("text").remove();
+              d3.select(this).transition().duration(490)
+              .attr("transform", function(d) {return "translate(" +d.x +"," + d.y +")"});
+              d3.select(this).classed("fixed", d.fixed = false);
+
+              suggestion(d);
+              /*d3.selectAll("g.node.fixed").select("image").transition().duration(500)
+              .attr("y",function(d)
+                { console.log(chosen[i].order);
+                  if(d.y > (280 + (chosen[i].order)*70))
+                    return (d.y-70);
+                  else return d.y;
+                });*/
+            //d3.select("image."+d.key).remove();
+            //d3.select("text."+d.key).remove();
+            
+          }}}
+          /*
+          var tempname = d.key;
+          var temphero = {name: tempname};
+          chosen.push(temphero);
+          d3.select("g")
+            .append("image")
+            .attr("xlink:href",  d.img)
+            .attr("x",400)
+            .attr("y",340 + i*50)
+            .attr("height", 60)
+            .attr("width", 60);
+          d3.select("g")
+            .append("text")
+            .text(tempname)
+            .attr("x",470)
+            .attr("y",320 + (++i)*50)
+            .style("fill", "white");
+            console.log(chosen);console.log(tempname);
+          choose();
+          */
+        // }
+    }});
+
+  //d3.selectAll("g.node")
+  //.append("circle")
+  //.attr("r", function(d) {return d.radius ? radiusScale(d.radius) : 20})
+  //.style("fill", function(d) {return d.depth == 0 ? "#FFCC00" : d.depth == 1 ? planetColors[d.key] : "lightgray"});
+  d3.selectAll("g.node")
+      .append("svg:circle")
+      .attr("r", function(d){
+        if(d.depth == 0)return 0;
+        else return 25;})
+      .style("fill", "#eee").style("fill-opacity",0.1);
+
+  d3.selectAll("g.node")
+  .append("svg:image")
+  .attr("xlink:href",  function(d) { return d.img;})
+    .attr("x", -30+0.5)
+    .attr("y", -26+0.5)
+    .attr("height", function(d){
+        if(d.depth == 0)return 0;
+        else return 60;})
+    .attr("width", function(d){
+        if(d.depth == 0)return 0;
+        else return 60;})
+    .on("mouseover",tip.show)
+    .on("mouseout",tip.hide)
+    ;
+/*
+  d3.selectAll("g.node").filter(function(d) {return d.depth == 1})
+  .append("text")
+  .text(function(d) {return d.depth == 0 ? "Sun" : d.key})
+  .attr("y", 20)
+  .style("text-anchor", "middle")*/
+
+
+  //gradient
+  var gradient = d3.select("svg").append("defs")
+        .append("linearGradient")
+    .attr("id", "gradient")
+    // .attr("x1", "0%")
+    .attr("y1", "0%")
+    // .attr("x2", "100%")
+    .attr("y2", "100%")
+    .attr("spreadMethod", "pad");
+
+gradient.append("stop")
+    .attr("offset", "0%")
+    .attr("stop-color", "#5f3f18")
+    .attr("stop-opacity", 1);
+
+gradient.append("stop")
+    .attr("offset", "100%")
+    .attr("stop-color", "#311b06")
+    .attr("stop-opacity", 1);
+
+  //button starts
+ /* var buttonGroup = d3.select("svg").append("g")
+    .attr("transform", "translate(800,500)");
+  buttonGroup.append("circle")
+    .attr("r", 28)
+    .attr("fill", "url(#gradient)")
+    .attr("cursor", "pointer")
+    .on("mouseover", function(d) {
+        d3.select(this).transition()
+            .ease("elastic")
+            .duration("500")
+            .attr("r", 45);
+        buttonGroup.select("text").transition()
+            .ease("cubic-out")
+            .duration("200")
+            .attr("y", 10)
+            .attr("font-size", 25)
+            .attr("fill", "#777");
+    })
+    .on("mouseout", function(d) {
+        d3.select(this).transition()
+            .ease("quad")
+            .delay("100")
+            .duration("200")
+            .attr("r", 28);
+        buttonGroup.select("text").transition()
+            .ease("cubic-out")
+            .duration("400")
+            .delay("100")
+            .attr("y", 7)
+            .attr("font-size", 15)
+            .attr("fill", "#fff");
+          
+    } )
+    .on("click", function() {
+      if (!analyse_flag) {
+        test();
+        buttonGroup.transition().duration(500)
+        .attr("transform", "translate(50,50)");
+        buttonGroup.select("text").text("Return");
+        // click = true;
+      } else {
+        test2();
+        buttonGroup.transition().ease("bounce").duration(500)
+        .attr("transform", "translate(800,500)");
+        buttonGroup.select("text").text("Analyze");
+        // click = false;
+      }
+      d3.select(this).transition()
+            //.ease("elastic")
+            .duration("100")
+            .attr("r", 35);
+            d3.select(this).transition()
+            //.ease("elastic")
+            .delay("100")
+            .duration("100")
+            .attr("r", 45);      
+    });
+
+  buttonGroup.append("text")
+    .text("Analyze")
+    .attr("text-anchor", "middle")
+    .attr("y", 7)
+    .attr("id", function(d) { return "text"; })
+    .attr("font-size", "15px")
+    .attr("fill", "#FFF")
+    .attr("pointer-events", "none");*/
+    var buttonGroup = d3.select("svg").append("g")
+    .attr("transform", "translate(800,525)");
+  buttonGroup.append("image")
+    .attr("xlink:href",  "https://s3.amazonaws.com/cse6242project/analyzeframe.png")
+    .attr("height", 100)
+    .attr("width",100)
+    .attr("x",-50)
+    .attr("y",-50)
+    .attr("cursor", "pointer")
+   /* .on("mouseover", function(d) {
+        d3.select(this).transition()
+            .ease("elastic")
+            .duration("500")
+            .attr("height", 90)
+            .attr("width",90)
+        buttonGroup.select("text").transition()
+            .ease("cubic-out")
+            .duration("200")
+            .attr("y", 10)
+            .attr("font-size", 25)
+            .attr("fill", "#777");
+    })
+    .on("mouseout", function(d) {
+        d3.select(this).transition()
+            .ease("quad")
+            .delay("100")
+            .duration("200")
+            .attr("height", 56)
+            .attr("width",56)
+        buttonGroup.select("text").transition()
+            .ease("cubic-out")
+            .duration("400")
+            .delay("100")
+            .attr("y", 7)
+            .attr("font-size", 15)
+            .attr("fill", "#fff");
+          
+    } )*/
+    .on("click", function() {
+      if (!analyse_flag) {
+        test();
+        buttonGroup.transition().duration(500)
+        .attr("transform", "translate(50,50)");
+        buttonGroup.select("text").text("Return");
+        // click = true;
+      } else {
+        test2();
+        buttonGroup.transition().ease("bounce").duration(500)
+        .attr("transform", "translate(800,525)");
+        buttonGroup.select("text").text("Analyze");
+        // click = false;
+      }
+      /*d3.select(this).transition()
+            //.ease("elastic")
+            .duration("100")
+            .attr("r", 35);
+            d3.select(this).transition()
+            //.ease("elastic")
+            .delay("100")
+            .duration("100")
+            .attr("r", 45);     */ 
+    });
+
+  buttonGroup.append("text")
+    .text("Analyze")
+    .attr("text-anchor", "middle")
+    .attr("y", 5)
+    .attr("id", function(d) { return "text"; })
+    .attr("font-size", "18px")
+    .attr("fill", "#DDD")
+    .attr("pointer-events", "none");
+  //button ends
+
+  //search button
+    var buttonGroup2 = d3.select("svg").append("g")
+    .attr("class","search")
+    .attr("transform", "translate(850,425)");
+  buttonGroup2.append("circle")
+    .attr("r", 28)
+    .attr("fill", "url(#gradient)")
+    .attr("cursor", "pointer")
+    /*.on("mouseover", function(d) {
+        d3.select(this).transition()
+            .ease("elastic")
+            .duration("500")
+            .attr("r", 45);
+        buttonGroup2.select("text").transition()
+            .ease("cubic-out")
+            .duration("200")
+            .attr("y", 10)
+            .attr("font-size", 25)
+            .attr("fill", "#777");
+    })
+    .on("mouseout", function(d) {
+        buttonGroup2.select("circle").transition()
+            .ease("quad")
+            .delay("100")
+            .duration("200")
+            .attr("r", 28);
+        buttonGroup2.select("text").transition()
+            .ease("cubic-out")
+            .duration("400")
+            .delay("100")
+            .attr("y", 7)
+            .attr("font-size", 15)
+            .attr("fill", "#fff");
+          
+    } )*/
+    /*.on("click", function() {
+      var searchFail = search();
+      d3.select(this).transition()
+            //.ease("elastic")
+            .duration("100")
+            .attr("r", 35);
+            d3.select(this).transition()
+            //.ease("elastic")
+            .delay("100")
+            .duration("100")
+            .attr("r", 45);
+      if(searchFail){
+        buttonGroup2.select("circle").transition()
+            .ease("quad")
+            .delay("100")
+            .duration("200")
+            .attr("r", 28);
+      }      
+    });*/
+
+  buttonGroup2.append("text")
+    .text("Search")
+    .attr("text-anchor", "middle")
+    .attr("y", 7)
+    .attr("id", function(d) { return "text"; })
+    .attr("font-size", "14px")
+    .attr("fill", "#FFF")
+    .attr("pointer-events", "none");
+
+
+  var buttonGroup3 = d3.select("svg").append("g")
+  .attr("class","search1")
+    .attr("transform", "translate(731.5,385)");
+  buttonGroup3.append("image")
+    // .attr("xlink:href",  "file:///C:/Users/asus/Desktop/Study/spring%20%202017/cse%206242/project/D3%20program/sbutton2.png")
+    .attr("xlink:href",  "https://s3.amazonaws.com/cse6242project/searchframe.png")
+    .attr("height", 80)
+    .attr("width",160)
+    .attr("cursor", "pointer")
+    /*.on("mouseover", function(d) {
+        d3.select(this).transition()
+            .ease("elastic")
+            .duration("500")
+            .attr("r", 45);
+        buttonGroup3.select("text").transition()
+            .ease("cubic-out")
+            .duration("200")
+            .attr("y", 10)
+            .attr("font-size", 25)
+            .attr("fill", "#777");
+    })
+    .on("mouseout", function(d) {
+        d3.select(this).transition()
+            .ease("quad")
+            .delay("100")
+            .duration("200")
+            .attr("r", 28);
+        buttonGroup3.select("text").transition()
+            .ease("cubic-out")
+            .duration("400")
+            .delay("100")
+            .attr("y", 7)
+            .attr("font-size", 15)
+            .attr("fill", "#fff");
+          
+    } )*/
+    .on("click", function() {
+      var searchFail = search();
+      /*d3.select(this).transition()
+            //.ease("elastic")
+            .duration("100")
+            .attr("r", 35);
+            d3.select(this).transition()
+            //.ease("elastic")
+            .delay("100")
+            .duration("100")
+            .attr("r", 45);*/
+      /*if(searchFail){
+        buttonGroup2.select("circle").transition()
+            .ease("quad")
+            .delay("100")
+            .duration("200")
+            .attr("r", 28);
+      }  */    
+    });
+/*
+  buttonGroup3.append("text")
+    .text("Search")
+    .attr("text-anchor", "middle")
+    .attr("y", 7)
+    .attr("id", function(d) { return "text"; })
+    .attr("font-size", "15px")
+    .attr("fill", "#FFF")
+    .attr("pointer-events", "none");*/
+
+var buttonGroup5 = d3.select("svg").append("g")
+    .attr("class","clearb2")
+    .attr("transform", "translate(782,340)");
+  buttonGroup5.append("circle")
+    .attr("r", 22)
+    .attr("fill", "url(#gradient)")
+    .attr("cursor", "pointer");
+  buttonGroup5.append("text")
+    .text("Clear")
+    .attr("text-anchor", "middle")
+    .attr("y", 7)
+    .attr("id", function(d) { return "text"; })
+    .attr("font-size", "15px")
+    .attr("fill", "#FFF")
+    .attr("pointer-events", "none");
+
+var buttonGroup4 = d3.select("svg").append("g")
+  .attr("class","clearb1")
+    .attr("transform", "translate(750,300)");
+  buttonGroup4.append("image")
+    .attr("xlink:href",  "https://s3.amazonaws.com/cse6242project/returnbutton.png")
+    .attr("height", 83.5)
+    .attr("width",64.5)
+    .attr("cursor", "pointer")
+    /*.on("mouseover", function(d) {
+        d3.select(this).transition()
+            .ease("elastic")
+            .duration("500")
+            .attr("r", 45);
+        buttonGroup3.select("text").transition()
+            .ease("cubic-out")
+            .duration("200")
+            .attr("y", 10)
+            .attr("font-size", 25)
+            .attr("fill", "#777");
+    })
+    .on("mouseout", function(d) {
+        d3.select(this).transition()
+            .ease("quad")
+            .delay("100")
+            .duration("200")
+            .attr("r", 28);
+        buttonGroup3.select("text").transition()
+            .ease("cubic-out")
+            .duration("400")
+            .delay("100")
+            .attr("y", 7)
+            .attr("font-size", 15)
+            .attr("fill", "#fff");
+          
+    } )*/
+    .on("click", function() {
+      clearb();
+      /*d3.select(this).transition()
+            //.ease("elastic")
+            .duration("100")
+            .attr("r", 35);
+            d3.select(this).transition()
+            //.ease("elastic")
+            .delay("100")
+            .duration("100")
+            .attr("r", 45);*/
+      /*if(searchFail){
+        buttonGroup2.select("circle").transition()
+            .ease("quad")
+            .delay("100")
+            .duration("200")
+            .attr("r", 28);
+      }  */    
+    });
+
+
+  d3.select("g.viz")
+  .selectAll("circle.ring")
+  .data(orbit.orbitalRings())
+  .enter()
+  .insert("circle", "g")
+  .attr("class", "ring")
+  .attr("r", function(d) {return d.r})
+  .attr("cx", function(d) {return d.x})
+  .attr("cy", function(d) {return d.y})
+  .style("stroke",function(d) {
+    if (d.r <250)return " #b30000";
+    else if (d.r >300)return "#00a3cc";
+    else return " #00802b";
+  });
+
+  // d3.select("#buttons").append("button").html("solar").on("click", function() {newMode("solar")});
+  // d3.select("#buttons").append("button").html("flat").on("click", function() {newMode("flat")});
+  // d3.select("#buttons").append("button").html("hide").on("click", test);
+  // d3.select("#buttons").append("button").html("show").on("click", test2);
+  d3.select("#buttons").append("input").attr("type","text")
+  .attr("size",6)
+    .attr("name","textInput")
+    .attr("value","Name").attr("id","msg");
+  var box =  document.getElementById("msg").style;
+  box.background="rgba(0,0,0,0.1)";
+  box.color="white";
+  box.border="1px inset rgba(0,0,0,0.1)"
+
+  // d3.select("#buttons").append("button").html("search").on("click", search);
+  d3.select("body").on("keydown",pressEnter);
+
+  orbit.on("tick", function() {
+    d3.selectAll("g.node")
+      .attr("transform", function(d) {if(!d.fixed){return "translate(" +d.x +"," + d.y+")"}});
+
+    d3.selectAll("circle.ring")
+    .attr("cx", function(d) {return d.x})
+    .attr("cy", function(d) {return d.y});
+  });
+
+  orbit.start();
+/*
+  function choose(){
+    d3.select("svg").append("text").text("BBBBBBBBBB")
+  }*/
+
+  //making intitial suggestion
+  function suggestion(d){
+    // setTimeout(function(){},500);
+    d3.selectAll("g.node").filter(function(d){
+      d.suggest=0;
+    });
+    cnt = 0;
+    var record=[];
+                for(j=0;j<5;j++){
+                  if(chosen[j].hero_id != null){
+                    cnt++;
+                    record.push(chosen[j].hero_id);
+                    console.log(record.indexOf(2))
+                  }
+                }
+                console.log(cnt);
+                console.log(record);
+                    console.log(x5);
+                if(cnt == 1){
+    // var s1 = dwinrate1[d.hero_id].suggest1.valueOf();
+    // var s2 = dwinrate1[d.hero_id].suggest2.valueOf();
+    // var s3 = dwinrate1[d.hero_id].suggest3.valueOf();
+    // var s4 = dwinrate1[d.hero_id].suggest4.valueOf();
+    // var s1 = 2;
+    // var s2 = 3;
+    // var s3 = 4;
+    // var s4 = 5;
+    // var s = [1, 2, 3, 4];
+    var s =[];
+    dwinrate1.forEach(function(d){
+      if(d.hero_id.valueOf() == record[0]){
+        // d.choice1 = +d.choice1;
+        s.push(parseInt(d.choice1));
+        s.push(parseInt(d.choice2));
+        s.push(parseInt(d.choice3));
+        s.push(parseInt(d.choice4));
+        // s[0]=parseInt(d.choice1);
+        // s[1]=parseInt(d.choice2);
+        // s[2]=parseInt(d.choice3);
+        // s[3]=parseInt(d.choice4);
+      }
+    });
+    console.log(s);console.log(s[0]+1)
+     for(j=0; j<4; j++){
+
+    d3.select("g#n"+ s[j] +".node").select("circle")
+    .style("stroke", function(d){
+          
+       d.suggest = 1;//console.log(d);
+      return "gold";
+      /*
+      if(d.ring == 225) {return "#ffa18c";}
+      if(d.ring == 300) {return "greenyellow";}
+      if(d.ring == 375) {return "#b5fffd";}*/
+      
+    }).style("stroke-width", 8).style("stroke-opacity",0.8);}
+    /*d3.selectAll("g.node").select("circle")
+    // .style("stroke-width", 8)
+    .style("stroke", function(d){
+          if((d.hero_id == s1) || (d.hero_id == s2) || (d.hero_id == s3) || (d.hero_id == s4))
+      {d.suggest = 1;console.log(d);
+      d3.select(this).style("stroke-width", 8);
+      if(d.ring == 225) {return "#ffa18c";}
+      if(d.ring == 300) {return "greenyellow";}
+      if(d.ring == 375) {return "#b5fffd";}
+      }
+    })*/
+    // .style("stroke-width", 8)
+    // .style("stroke-opacity",0.8);
+          totalScore=0;
+
+    }
+    else if(cnt < 5 && cnt!=0){
+      var number = 4;
+      var sortable=[];
+      var a=0;
+      var flag=0;
+      d3.selectAll("g.node").filter(function(d){
+        d.score = 1/(1 + Math.exp(-( 
+          -0.777*Math.pow(((x1+d.attr1)/(cnt+1)*5-1.6623),2)+
+          0.5054*Math.pow(((x2+d.attr2)/(cnt+1)*5+0.0473),2)-
+          0.05230*Math.pow(((x3+d.attr3)/(cnt+1)*5-17.52),2)-
+          0.2569*Math.pow(((x4+d.attr4)/(cnt+1)*5-3.78366),2)-
+          0.191267*Math.pow(((x5+d.attr5)/(cnt+1)*5-5.5209),2)+
+          20.0959
+          )));//console.log(d.score);
+        sortable.push([d.hero_id, d.score]);
+        
+      });
+      sortable.sort(function(a,b){return b[1] - a[1];});
+       console.log(sortable);
+      // d3.selectAll("g.node").filter(function(d){
+      for(j=1;j<=number;j++){
+        d3.selectAll("g.node").filter(function(d){
+          if(d.hero_id == sortable[j][0] && record.indexOf(parseInt(d.hero_id))!=-1){number++;}
+        });
+        d3.selectAll("g.node").filter(function(d){
+
+                    return d.hero_id === sortable[j][0] && record.indexOf(parseInt(d.hero_id))==-1;
+
+        })
+        .select("circle")
+        .style("stroke", function(d){console.log(d.hero_id);d.suggest = 1;
+          return"gold";})
+        .style("stroke-width", 8).style("stroke-opacity",0.8);
+      }
+      // }
+      totalScore=0;
+    }
+    else if (cnt == 5){
+      totalScore = 1/(1 + Math.exp(-( 
+          -0.777*Math.pow((x1-1.6623),2)+
+          0.5054*Math.pow((x2+0.0473),2)-
+          0.05230*Math.pow((x3-17.52),2)-
+          0.2569*Math.pow((x4-3.78366),2)-
+          0.191267*Math.pow((x5-5.5209),2)+
+          20.0959
+          )));
+    }
+  }
+
+  // console.log(d);
+
+  function newMode(_mode) {
+    orbit.mode(_mode)
+    .nodes(_data);
+
+  d3.select("g.viz")
+  .selectAll("circle.ring")
+  .data(orbit.orbitalRings())
+    .exit()
+    .transition()
+    .duration(500)
+    .style("stroke-opacity", 0)
+    .style("stroke-width", 3)
+    .remove();
+
+    d3.select("g.viz")
+    .selectAll("circle.ring")
+    .data(orbit.orbitalRings())
+    .enter()
+    .insert("circle", "g")
+    .attr("class", "ring");
+    
+    d3.selectAll("circle.ring")
+    .attr("r", function(d) {return d.r})
+    .attr("cx", function(d) {return d.x})
+    .attr("cy", function(d) {return d.y});
+
+  }
+
+  function nodeOver(d) {
+    // if(!d.fixed){
+    if(!analyse_flag){
+        orbit.stop();//}
+/*
+    if (d.depth == 2) {
+      d3.select(this).append("text").text(d.label || d.key).style("text-anchor", "middle")
+      .attr("y", 15)
+      .attr("class", "moon");
+    }*/
+    d3.select(this).style("cursor","pointer");
+    if(!d.suggest){
+        d3.select(this).select("circle")
+        .style("stroke", function(d){
+          if(d.ring == 225) {return "#ffa18c";}
+          if(d.ring == 300) {return "greenyellow";}
+          if(d.ring == 375) {return "#b5fffd";}
+        })
+        .style("stroke-width", 8)
+        .style("stroke-opacity",0.8);
+        }}
+    //d3.select(this).append("text").text(function(d) {return d.depth == 0 ? "Clear" : d.key}).attr("y", 40).style("text-anchor", "middle");
+  }
+
+  function nodeOut() {
+    //if(!d.fixed){
+    if(!analyse_flag){
+         orbit.start();//}
+    /*  d3.selectAll("text.moon").remove();*/
+    d3.select(this).style("cursor","");
+    //d3.selectAll("g.node > circle").style("stroke", "none").style("stroke-width", 0);
+        d3.select(this).filter(function(d){
+          return d.suggest == 0;
+        }).select("circle").style("stroke", "none").style("stroke-width", 0);
+   // d3.select(this).select("text").remove();
+  }
+  }
+
+  function search(){
+    if(!analyse_flag){
+      //d3.select("svg").append("text").text(d3.select("#msg").property("value")).attr("x",415).attr("y",280);
+      var count = 0;
+              if(d3.select("#msg").property("value")==""){
+          alert("empty input");
+          return 1;
+      }
+      d3.selectAll("g.node")
+      .style("opacity",function(d){
+        var find_flag = 0;
+        find_flag = d.key.toUpperCase().indexOf(d3.select("#msg").property("value").toUpperCase());
+
+        // if(d3.select("#msg").property("value").toUpperCase() != d.key.toUpperCase()){
+          if(find_flag == -1){
+          count = count + 1;
+          if(!d.suggest){
+                    d3.select(this).select("circle").style("stroke-width", 0);}
+          return 0.3;
+        }
+        else {
+          d3.select(this).select("circle").style("stroke-width", 8).style("stroke-opacity",0.8)
+    .style("stroke", function(d){
+      if(!d.suggest){
+            if(d.ring == 225) {return "#ffa18c";}
+            if(d.ring == 300) {return "greenyellow";}
+            if(d.ring == 375) {return "#b5fffd";}}
+      else return "gold";
+      })
+           return 1;
+        }
+      })
+      
+      console.log(count);
+      if(count == 111){
+        d3.selectAll("g.node").style("opacity",1);
+        alert("no match");
+        return 1;
+      }
+      else return 0;
+    }
+  }
+
+  function pressEnter(){
+     if(d3.event.keyCode == 13){
+      search();
+      // clearb();
+      console.log("return");
+     }
+  }
+
+  function clearb(){
+    for(i=0;i<5;i++){
+      chosen[i].hero_id = null;
+    }
+    x1=0;x2=0;x3=0;x4=0;x5=0;
+
+    d3.selectAll("g.node.fixed")
+    .selectAll("image").transition().duration(500)
+              .attr("x", -30+0.5)
+              .attr("y", -26+0.5)
+              .attr("height", 60)
+              .attr("width", 60);
+              d3.selectAll("g.node.fixed").selectAll("circle").transition().duration(500).attr("r",25)
+              .attr("cx",0).attr("cy",0);
+              d3.selectAll("g.node.fixed").selectAll("text").remove();
+              d3.selectAll("g.node.fixed").transition().duration(490)
+              .attr("transform", function(d) {return "translate(" +d.x +"," + d.y +")"});
+                 setTimeout(function(){d3.selectAll("g.node").classed("fixed",function(d) {d.fixed = false;});},500);
+  }
+
+  function test(){
+    // console.log(orbit.nodes());
+    orbit.stop();
+    analyse_flag = 1;
+    document.getElementById("msg").style.display="none";
+    d3.select("g.search").attr("visibility", "hidden");
+    d3.select("g.search1").attr("visibility", "hidden");
+    d3.select("g.clearb1").attr("visibility", "hidden");
+    d3.select("g.clearb2").attr("visibility", "hidden");
+    d3.selectAll("g.node").attr("visibility", "hidden");
+    d3.selectAll("circle.ring").attr("visibility", "hidden");
+    d3.selectAll("g.node").style("opacity",1);
+    d3.selectAll("g.node").selectAll("circle").style("stroke-width",function(d){
+      if(!d.suggest){return 0;}
+      else{return 8;}
+    });
+    d3.selectAll("g.node.fixed").attr("visibility", "visible");
+    d3.selectAll("g.node.fixed").selectAll("circle")
+    .transition().duration(500)
+    .style("stroke-width", 12).style("stroke-opacity",0.8)
+    .style("stroke", function(d){
+      if(d.ring == 225) {return "#ffa18c";}
+      if(d.ring == 300) {return "greenyellow";}
+      if(d.ring == 375) {return "#b5fffd";}
+    })
+    .attr("r",40)
+    .attr("cx",250-250).attr("cy",function(d){
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 110 + 130 * chosen[i].order;
+      }
+    });
+    d3.selectAll("g.node.fixed").selectAll("image")
+    .transition().duration(500)
+    .attr("height",96).attr("width",96)
+    .attr("x",250-250-48+0.5)
+    .attr("y",function(d){
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 110-40-1.5 + 130 * chosen[i].order;
+      }
+    });
+    d3.selectAll("g.node.fixed").selectAll("text")
+    .transition().duration(500)
+    .style("font-size","22px")
+    .attr("x",250-250-60+0.5)
+    .attr("y",function(d){
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 110+6 + 130 * chosen[i].order;
+      }
+    });
+    d3.selectAll("g.node.fixed").append("image")
+    
+    .transition().duration(500)
+    .attr("class","icon")
+    .attr("xlink:href",  "https://s3.amazonaws.com/cse6242project/heroframe.png")
+    .attr("height", 136)
+    .attr("width",452)
+    .attr("x",250-250-60+0.5-167)
+    .attr("y",function(d){
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 37 + 130 * chosen[i].order;
+      }
+    });
+
+    //append label
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class","label")
+    .attr("x", 60).attr("y", 40)
+    .text("Position")
+    .style("font-size", "25px")
+    .style("fill", "white");
+
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class","lb")
+    .attr("x", 90)
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 110+6 + 130 * chosen[i].order;
+      }
+    })
+    .text(function(d) {
+      if(d.label == 1) return 4;
+      else if(d.label == 3) return 2;
+      else if(d.label == 2) return 3;
+      return d.label+1;
+    })
+    .style("fill","white")
+    .style("font-size","20px");
+
+    //append table of contents
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class","rect1")
+    .attr("x", 150).attr("y", 40)
+    .text("Hard Carry")
+    .style("font-size", "25px")
+    .style("fill", "#ff4772");
+
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class","rect2")
+    .attr("x", 300).attr("y", 40)
+    .text("Semi-Carry")
+    .style("font-size", "25px")
+    .style("fill", "#ffc061");
+
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class","rect3")
+    .attr("x", 450).attr("y", 40)
+    .text("Offlaner")
+    .style("font-size", "25px")
+    .style("fill", "#c8ebae");
+
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class","rect4")
+    .attr("x", 570).attr("y", 40)
+    .text("Roaming Support")
+    .style("font-size", "25px")
+    .style("fill", "#ae88eb");
+
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class","rect5")
+    .attr("x", 780).attr("y", 40)
+    .text("Hard Support")
+    .style("font-size", "25px")
+    .style("fill", "#8ac1ff");
+
+    /*
+    //append attribute rectangle -- values
+    //rectangle 1
+    d3.selectAll("g.node.fixed").append("text").attr("class","rect1")
+    .attr("x", 150)
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].name==d.key)
+          return 60+6 + 130 * chosen[i].order;
+      }
+    })
+    .text(function(d) {return d.attr1})
+    .style("fill","white");
+
+    
+    //rectangle 2
+    d3.selectAll("g.node.fixed").append("text").attr("class","rect2")
+    .attr("x", function(d) {return 150 + 500*d.attr1})
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].name==d.key)
+          return 110+6 + 130 * chosen[i].order;
+      }
+    })
+    .text(function(d) {return d.attr2})
+    .style("fill","white");
+
+    //rectangle 3
+    d3.selectAll("g.node.fixed").append("text").attr("class","rect3")
+    .attr("x", function(d) {return 150 + 500*(d.attr1+d.attr2)})
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].name==d.key)
+          return 110+6 + 130 * chosen[i].order;
+      }
+    })
+    .text(function(d) {return d.attr3})
+    .style("fill","white");
+
+    //rectangle 4
+    d3.selectAll("g.node.fixed").append("text").attr("class","rect4")
+    .attr("x", function(d) {return 150 + 500*(d.attr1+d.attr2+d.attr3)})
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].name==d.key)
+          return 110+6 + 130 * chosen[i].order;
+      }
+    })
+    .text(function(d) {return d.attr4})
+    .style("fill","white");
+
+    //rectangle 5
+    d3.selectAll("g.node.fixed").append("text").attr("class","rect5")
+    .attr("x", function(d) {return 150 + 500*(d.attr1+d.attr2+d.attr3+10*d.attr4)})
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].name==d.key)
+          return 110+6 + 130 * chosen[i].order;
+      }
+    })
+    .text(function(d) {return d.attr5})
+    .style("fill","white");
+    */
+
+    /* -------------------------------------------------------
+    ----------------------------------------------------------- */
+    //append attribute rectangle -- rect visualization
+    //rectangle 1
+    d3.selectAll("g.node.fixed").append("rect").transition().duration(500).attr("class","Rect1")
+    .attr("x", 150)
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 60+16 + 130 * chosen[i].order;
+      }
+    })
+    .attr("width", function(d) {return 800*d.attr1})
+    .attr("height", 60)
+    .style("fill","#ff4772");
+    
+    //rectangle 2 -->rectangle 4
+    d3.selectAll("g.node.fixed").append("rect").transition().duration(500).attr("class","Rect4")
+    .attr("x", function(d) {return 150 + 800*d.attr1})
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 60+16 + 130 * chosen[i].order;
+      }
+    })
+    .attr("width", function(d) {return 800*d.attr4})
+    .attr("height", 60)
+    .style("fill","#ffc061");
+
+    //rectangle 3
+    d3.selectAll("g.node.fixed").append("rect").transition().duration(500).attr("class","Rect3")
+    .attr("x", function(d) {return 150 + 800*(d.attr1+d.attr4)})
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 60+16 + 130 * chosen[i].order;
+      }
+    })
+    .attr("width", function(d) {return 800*d.attr3})
+    .attr("height", 60)
+    .style("fill","#c8ebae");
+
+    //rectangle 4 --> rectangle 2
+    d3.selectAll("g.node.fixed").append("rect").transition().duration(500).attr("class","Rect2")
+    .attr("x", function(d) {return 150 + 800*(d.attr1+d.attr4+d.attr3)})
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 60+16 + 130 * chosen[i].order;
+      }
+    })
+    .attr("width", function(d) {return 800*d.attr2})
+    .attr("height", 60)
+    .style("fill","#ae88eb");
+
+    //rectangle 5
+    d3.selectAll("g.node.fixed").append("rect").transition().duration(500).attr("class","Rect5")
+    .attr("x", function(d) {return 150 + 800*(d.attr1+d.attr2+d.attr3+d.attr4)})
+    .attr("y", function(d) {
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 60+16 + 130 * chosen[i].order;
+      }
+    })
+    .attr("width", function(d) {return 800*d.attr5})
+    .attr("height", 60)
+    .style("fill","#8ac1ff");
+
+    //add overall team score
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class", "ts")
+    .attr("x", 980)
+    .attr("y", 300)
+    .text("Team Score")
+    .style("fill","Orange")
+    .style("font-size", "35px")
+    .style("font-weight", "bold");
+
+    d3.selectAll("g.node.fixed").append("text").transition().duration(500).attr("class", "ts")
+    .attr("x", 1070)
+    .attr("y", 350)
+    .text(function(){
+      var x = 10 / (0.7 - 0.1) * (totalScore - 0.1);
+      if(x>=0 && x<=10)
+      return x.toFixed(1).toString() + "/10";
+      else if(x<0)return "0/10";
+      else return "10/10";
+    })
+    .style("fill","white")
+    .style("font-size", "35px")
+    .style("font-weight", "bold")
+    .style("text-anchor", "middle");
+
+
+    console.log("test");
+  }
+
+  function test2(){
+    orbit.start();
+    analyse_flag = 0;
+   setTimeout(function(){
+    document.getElementById("msg").style.display="block"}
+    ,500);
+   // d3.selectAll("imgae.icon").remove();
+    d3.select("g.search").transition().delay(500).attr("visibility", "visible");
+    d3.select("g.search1").transition().delay(500).attr("visibility", "visible");
+    d3.select("g.clearb1").transition().delay(500).attr("visibility", "visible");
+    d3.select("g.clearb2").transition().delay(500).attr("visibility", "visible");
+    d3.selectAll("g.node").transition().delay(500).attr("visibility", "visible");
+    d3.selectAll("circle.ring").transition().delay(500).attr("visibility", "visible");
+    d3.selectAll("g.node.fixed").selectAll("circle")
+    .transition().ease("bounce").duration(500)
+    .style("stroke", "none").style("stroke-width", 0)
+    .attr("r",34)
+    .attr("cx",454.5).attr("cy",function(d){
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 280 + 70 - 35.5 + (chosen[i].order)*70;
+      }
+    });
+    d3.selectAll("g.node.fixed").selectAll("image")
+    .transition().ease("bounce").duration(500)
+    .attr("height",80).attr("width",80)
+    .attr("x",415)
+    .attr("y",function(d){
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 280 + (chosen[i].order)*70;
+      }
+    });
+
+    d3.selectAll("g.node.fixed").selectAll("text")
+    .transition().ease("bounce").duration(500)
+    .style("font-size","15px")
+    .attr("x",415)
+    .attr("y",function(d){
+      for(i=0;i<5;i++){
+        if(chosen[i].hero_id==d.hero_id)
+          return 280 + 35 + (chosen[i].order)*70;
+      }
+    });
+
+        d3.selectAll("g.node.fixed").selectAll("image.icon").remove();
+    d3.selectAll("g.node.fixed").selectAll("text.label").remove();
+    d3.selectAll("g.node.fixed").selectAll("text.lb").remove();
+    //remove text above the rect
+    d3.selectAll("g.node.fixed").selectAll("text.rect1").remove();
+    d3.selectAll("g.node.fixed").selectAll("text.rect2").remove();
+    d3.selectAll("g.node.fixed").selectAll("text.rect3").remove();
+    d3.selectAll("g.node.fixed").selectAll("text.rect4").remove();
+    d3.selectAll("g.node.fixed").selectAll("text.rect5").remove();
+    //remove rect
+    d3.selectAll("g.node.fixed").selectAll("rect.Rect1").remove();
+    d3.selectAll("g.node.fixed").selectAll("rect.Rect2").remove();
+    d3.selectAll("g.node.fixed").selectAll("rect.Rect3").remove();
+    d3.selectAll("g.node.fixed").selectAll("rect.Rect4").remove();
+    d3.selectAll("g.node.fixed").selectAll("rect.Rect5").remove();
+    //remove teamscore
+    d3.selectAll("g.node.fixed").selectAll("text.ts").remove();
+
+    console.log("test2");
+  }
+})
+}
+// bgimage="url('Abaddon.png')"
+// document.body.style.backgroundColor = "#f3f3f3";
+// document.body.style.backgroundImage = "url('img_tree.png')";
+</script>
+<body onload="makeViz()" bgcolor=" #232425" background="https://s3.amazonaws.com/cse6242project/wallpaper.jpeg">
+<div id="viz"><svg></svg><div id="buttons"></div></div>
+<footer>
+<script src="https://s3.amazonaws.com/cse6242project/d3.v3.min.js"></script>
+<script src="https://s3.amazonaws.com/cse6242project/d3.layout.orbit.js" charset="utf-8" type="text/javascript"></script>
+<script src="https://s3.amazonaws.com/cse6242project/d3.tip.v0.6.3.js"></script>
+</footer>
+</body>
+</html>
